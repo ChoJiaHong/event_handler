@@ -2,6 +2,8 @@ from .event import Event
 from .context import Context
 from .processor import EventProcessor
 from .handlers.deployment_change import DeploymentChangeHandler
+from .handlers.high_latency import HighLatencyHandler
+from .handlers.idle_system import IdleSystemHandler
 from .services.repository import Repository
 from .services.pressure_tester import PressureTester
 from .services.throughput_recorder import ThroughputRecorder
@@ -14,6 +16,8 @@ __all__ = [
     "Context",
     "EventProcessor",
     "DeploymentChangeHandler",
+    "HighLatencyHandler",
+    "IdleSystemHandler",
     "Repository",
     "PressureTester",
     "ThroughputRecorder",
