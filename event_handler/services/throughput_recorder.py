@@ -52,8 +52,26 @@ class ThroughputRecorder:
         parts = [f"{svc}={cnt}" for svc, cnt in sorted_services]
         return f"{node_name}:{','.join(parts)}"
 
-    def get(self, key: str, category: Optional[str] = None) -> Optional[int]:
-        key = self.make_key(key)
+
+    def _normalize_key(self, key: str) -> str:
+        """Return a canonical representation of ``key``.
+
+        Keys can contain a prefix followed by ``:`` and a comma separated list of
+        category assignments.  To make lookups order independent we sort the
+        category segments.
+        """
+        if ":" not in key:
+            return key
+
+        prefix, rest = key.split(":", 1)
+        parts = [p for p in rest.split(",") if p]
+        if not parts:
+            return prefix
+        return f"{prefix}:{','.join(sorted(parts))}"
+
+    async def get(self, key: str, category: Optional[str] = None) -> Optional[int]:
+        key = self._normalize_key(key)
+
         value = self._values.get(key)
 
         if category is None:
@@ -69,7 +87,8 @@ class ThroughputRecorder:
         return None
 
     async def save(self, key: str, throughput: int, category: Optional[str] = None) -> None:
-        key = self.make_key(key)
+        key = self._normalize_key(key)
+
         if category is None:
             self._values[key] = throughput
         else:
