@@ -1,0 +1,30 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*.so
+*.pyd
+
+# VS Code editor settings
+.vscode/
+
+# Python virtual environments
+venv/
+.env/
+.env.*.json
+
+# Pytest / coverage / logs
+.cache/
+.pytest_cache/
+*.log
+*.tmp
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# macOS system files
+.DS_Store
+
+# Docker artifacts (if any)
+*.tar
+*.img
+*.container
