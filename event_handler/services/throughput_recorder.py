@@ -47,7 +47,24 @@ class ThroughputRecorder:
                 # Invalid json, ignore and start fresh
                 pass
 
+    def _normalize_key(self, key: str) -> str:
+        """Return a canonical representation of ``key``.
+
+        Keys can contain a prefix followed by ``:`` and a comma separated list of
+        category assignments.  To make lookups order independent we sort the
+        category segments.
+        """
+        if ":" not in key:
+            return key
+
+        prefix, rest = key.split(":", 1)
+        parts = [p for p in rest.split(",") if p]
+        if not parts:
+            return prefix
+        return f"{prefix}:{','.join(sorted(parts))}"
+
     async def get(self, key: str, category: Optional[str] = None) -> Optional[int]:
+        key = self._normalize_key(key)
         value = self._values.get(key)
         if category is None:
             if isinstance(value, dict):
@@ -65,6 +82,7 @@ class ThroughputRecorder:
         return None
 
     async def save(self, key: str, throughput: int, category: Optional[str] = None) -> None:
+        key = self._normalize_key(key)
         if category is None:
             self._values[key] = throughput
         else:

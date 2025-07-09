@@ -40,3 +40,15 @@ def test_throughput_recorder_nested():
 
     asyncio.run(run())
 
+
+def test_throughput_recorder_key_normalization():
+    async def run():
+        recorder = ThroughputRecorder(initial_data=sample_data)
+        # retrieval with reversed category order should return same result
+        assert await recorder.get("node1:pose=1,gesture=2", "gesture") == 30
+        # update using reversed order should modify the canonical entry
+        await recorder.save("node1:pose=1,gesture=2", 99, "pose")
+        assert await recorder.get("node1:gesture=2,pose=1", "pose") == 99
+
+    asyncio.run(run())
+
