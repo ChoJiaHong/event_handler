@@ -1,5 +1,8 @@
 from datetime import datetime
 import asyncio
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 from event_handler import (
     Event,
@@ -35,14 +38,18 @@ def test_deployment_change_flow():
             source="detector",
         )
 
+        logging.info("processing deployment change event")
         await processor.process(event)
+        logging.info("finished deployment change event")
 
         assert dispatcher.last_dispatched == 100
         assert await recorder.get("abc") == 100
         assert state.state.value == "stable"
 
         # Second run should not invoke load test again
+        logging.info("processing deployment change event again")
         await processor.process(event)
+        logging.info("finished second deployment change event")
         assert dispatcher.last_dispatched == 100
 
     asyncio.run(run())

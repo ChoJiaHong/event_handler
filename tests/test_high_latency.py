@@ -1,5 +1,8 @@
 from datetime import datetime
 import asyncio
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 from event_handler import (
     Event,
@@ -41,7 +44,9 @@ def test_high_latency_handler_registration():
             source="detector",
         )
 
+        logging.info("processing high latency event")
         await processor.process(event)
+        logging.info("finished high latency event")
 
         assert called
         assert state.state.value == "stable"
