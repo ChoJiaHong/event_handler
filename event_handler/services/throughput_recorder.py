@@ -46,25 +46,30 @@ class ThroughputRecorder:
             except json.JSONDecodeError:
                 # Invalid json, ignore and start fresh
                 pass
+    
+    def make_key(node_name: str, service_counts: dict[str, int]) -> str:
+        sorted_services = sorted((k, v) for k, v in service_counts.items() if v > 0)
+        parts = [f"{svc}={cnt}" for svc, cnt in sorted_services]
+        return f"{node_name}:{','.join(parts)}"
 
-    async def get(self, key: str, category: Optional[str] = None) -> Optional[int]:
+    def get(self, key: str, category: Optional[str] = None) -> Optional[int]:
+        key = self.make_key(key)
         value = self._values.get(key)
+
         if category is None:
-            if isinstance(value, dict):
-                # if the stored value has a single category, return its throughput
-                if len(value) == 1:
-                    inner = next(iter(value.values()))
-                    return inner.get("throughput") if isinstance(inner, dict) else None
-                return None
-            return value
-        if not isinstance(value, dict):
-            return None
-        inner = value.get(category)
-        if isinstance(inner, dict):
-            return inner.get("throughput")
+            if isinstance(value, dict) and len(value) == 1:
+                inner = next(iter(value.values()))
+                return inner.get("throughput") if isinstance(inner, dict) else None
+            return value if not isinstance(value, dict) else None
+
+        if isinstance(value, dict):
+            inner = value.get(category)
+            return inner.get("throughput") if isinstance(inner, dict) else None
+
         return None
 
     async def save(self, key: str, throughput: int, category: Optional[str] = None) -> None:
+        key = self.make_key(key)
         if category is None:
             self._values[key] = throughput
         else:
