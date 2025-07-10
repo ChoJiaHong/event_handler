@@ -15,6 +15,7 @@ from event_handler import (
     AdjustmentCoordinator,
     Dispatcher,
     StateManager,
+    PrometheusService,
 )
 
 
@@ -26,8 +27,9 @@ def test_deployment_change_flow():
         adjuster = AdjustmentCoordinator()
         dispatcher = Dispatcher()
         state = StateManager()
+        prometheus = PrometheusService("http://localhost:9090")
 
-        ctx = Context(repo, tester, recorder, adjuster, dispatcher, state)
+        ctx = Context(repo, tester, recorder, adjuster, dispatcher, state, prometheus)
         processor = EventProcessor(ctx)
         processor.register_handler("DEPLOYMENT_CHANGE", DeploymentChangeHandler())
 

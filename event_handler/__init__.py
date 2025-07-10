@@ -10,6 +10,7 @@ from .services.throughput_recorder import ThroughputRecorder
 from .services.adjustment_coordinator import AdjustmentCoordinator
 from .services.dispatcher import Dispatcher
 from .services.state_manager import StateManager
+from .services.prometheus import PrometheusService
 
 __all__ = [
     "Event",
@@ -24,4 +25,5 @@ __all__ = [
     "AdjustmentCoordinator",
     "Dispatcher",
     "StateManager",
+    "PrometheusService",
 ]
