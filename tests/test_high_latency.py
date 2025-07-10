@@ -15,6 +15,7 @@ from event_handler import (
     AdjustmentCoordinator,
     Dispatcher,
     StateManager,
+    PrometheusService,
 )
 
 
@@ -33,7 +34,8 @@ def test_high_latency_handler_registration():
         adjuster = AdjustmentCoordinator()
         dispatcher = Dispatcher()
         state = StateManager()
-        ctx = Context(repo, tester, recorder, adjuster, dispatcher, state)
+        prometheus = PrometheusService("http://localhost:9090")
+        ctx = Context(repo, tester, recorder, adjuster, dispatcher, state, prometheus)
         processor = EventProcessor(ctx)
         processor.register_handler("HIGH_LATENCY", CustomHighLatencyHandler())
 
