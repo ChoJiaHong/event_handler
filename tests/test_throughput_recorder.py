@@ -30,13 +30,14 @@ sample_data = {
 def test_throughput_recorder_nested():
     async def run():
         recorder = ThroughputRecorder(initial_data=sample_data)
-        assert await recorder.get("node1:gesture=2,pose=1", "pose") == 20
-        assert await recorder.get("node1:gesture=2", "gesture") == 45
-        await recorder.save("node1:gesture=2,pose=1", 55, "pose")
-        assert await recorder.get("node1:gesture=2,pose=1", "pose") == 55
+        key = {"node": "node1", "services": {"gesture": 2, "pose": 1}}
+        assert await recorder.get(key, "pose") == 20
+        assert await recorder.get({"node": "node1", "services": {"gesture": 2}}, "gesture") == 45
+        await recorder.save(key, 55, "pose")
+        assert await recorder.get(key, "pose") == 55
         # backwards compatibility with simple values
-        await recorder.save("simple", 99)
-        assert await recorder.get("simple") == 99
+        await recorder.save({"node": "simple", "services": {}}, 99)
+        assert await recorder.get({"node": "simple", "services": {}}) == 99
 
     asyncio.run(run())
 
@@ -45,10 +46,12 @@ def test_throughput_recorder_key_normalization():
     async def run():
         recorder = ThroughputRecorder(initial_data=sample_data)
         # retrieval with reversed category order should return same result
-        assert await recorder.get("node1:pose=1,gesture=2", "gesture") == 30
+        key_rev = {"node": "node1", "services": {"pose": 1, "gesture": 2}}
+        assert await recorder.get(key_rev, "gesture") == 30
         # update using reversed order should modify the canonical entry
-        await recorder.save("node1:pose=1,gesture=2", 99, "pose")
-        assert await recorder.get("node1:gesture=2,pose=1", "pose") == 99
+        await recorder.save(key_rev, 99, "pose")
+        key_norm = {"node": "node1", "services": {"gesture": 2, "pose": 1}}
+        assert await recorder.get(key_norm, "pose") == 99
 
     asyncio.run(run())
 
