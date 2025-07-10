@@ -33,7 +33,7 @@ def test_deployment_change_flow():
 
         event = Event(
             type="DEPLOYMENT_CHANGE",
-            payload={"hash": "abc"},
+            payload={"hash": {"node": "abc", "services": {}}},
             timestamp=datetime.utcnow(),
             source="detector",
         )
@@ -43,7 +43,7 @@ def test_deployment_change_flow():
         logging.info("finished deployment change event")
 
         assert dispatcher.last_dispatched == 100
-        assert await recorder.get("abc") == 100
+        assert await recorder.get({"node": "abc", "services": {}}) == 100
         assert state.state.value == "stable"
 
         # Second run should not invoke load test again
