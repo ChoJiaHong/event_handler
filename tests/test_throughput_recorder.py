@@ -1,7 +1,6 @@
 import asyncio
 
-from event_handler.services.throughput_recorder import ThroughputRecorder
-
+from infra.throughput_repository import JSONThroughputRepository
 
 sample_data = {
     "node1:gesture=2,pose=1": {
@@ -29,13 +28,12 @@ sample_data = {
 
 def test_throughput_recorder_nested():
     async def run():
-        recorder = ThroughputRecorder(initial_data=sample_data)
+        recorder = JSONThroughputRepository(initial_data=sample_data)
         key = {"node": "node1", "services": {"gesture": 2, "pose": 1}}
         assert await recorder.get(key, "pose") == 20
         assert await recorder.get({"node": "node1", "services": {"gesture": 2}}, "gesture") == 45
         await recorder.save(key, 55, "pose")
         assert await recorder.get(key, "pose") == 55
-        # backwards compatibility with simple values
         await recorder.save({"node": "simple", "services": {}}, 99)
         assert await recorder.get({"node": "simple", "services": {}}) == 99
 
@@ -44,14 +42,11 @@ def test_throughput_recorder_nested():
 
 def test_throughput_recorder_key_normalization():
     async def run():
-        recorder = ThroughputRecorder(initial_data=sample_data)
-        # retrieval with reversed category order should return same result
+        recorder = JSONThroughputRepository(initial_data=sample_data)
         key_rev = {"node": "node1", "services": {"pose": 1, "gesture": 2}}
         assert await recorder.get(key_rev, "gesture") == 30
-        # update using reversed order should modify the canonical entry
         await recorder.save(key_rev, 99, "pose")
         key_norm = {"node": "node1", "services": {"gesture": 2, "pose": 1}}
         assert await recorder.get(key_norm, "pose") == 99
 
     asyncio.run(run())
-

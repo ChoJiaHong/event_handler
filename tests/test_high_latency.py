@@ -4,18 +4,16 @@ import logging
 
 logging.basicConfig(level=logging.INFO)
 
-from event_handler import (
-    Event,
-    Context,
-    EventProcessor,
-    HighLatencyHandler,
-    Repository,
-    PressureTester,
-    ThroughputRecorder,
-    AdjustmentCoordinator,
-    Dispatcher,
-    StateManager,
+from core import Event, Context, EventProcessor
+from handlers import HighLatencyHandler
+from infra import (
+    InMemoryRepository,
+    SimplePressureTester,
+    JSONThroughputRepository,
+    SimpleAdjustmentStrategy,
+    InMemoryDispatcher,
 )
+from core.domain import StateManager
 
 
 def test_high_latency_handler_registration():
@@ -27,11 +25,11 @@ def test_high_latency_handler_registration():
             called = True
 
     async def run():
-        repo = Repository()
-        tester = PressureTester()
-        recorder = ThroughputRecorder()
-        adjuster = AdjustmentCoordinator()
-        dispatcher = Dispatcher()
+        repo = InMemoryRepository()
+        tester = SimplePressureTester()
+        recorder = JSONThroughputRepository()
+        adjuster = SimpleAdjustmentStrategy()
+        dispatcher = InMemoryDispatcher()
         state = StateManager()
         ctx = Context(repo, tester, recorder, adjuster, dispatcher, state)
         processor = EventProcessor(ctx)

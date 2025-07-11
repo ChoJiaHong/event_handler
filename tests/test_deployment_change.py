@@ -4,27 +4,25 @@ import logging
 
 logging.basicConfig(level=logging.INFO)
 
-from event_handler import (
-    Event,
-    Context,
-    EventProcessor,
-    DeploymentChangeHandler,
-    Repository,
-    PressureTester,
-    ThroughputRecorder,
-    AdjustmentCoordinator,
-    Dispatcher,
-    StateManager,
+from core import Event, Context, EventProcessor
+from handlers import DeploymentChangeHandler
+from infra import (
+    InMemoryRepository,
+    SimplePressureTester,
+    JSONThroughputRepository,
+    SimpleAdjustmentStrategy,
+    InMemoryDispatcher,
 )
+from core.domain import StateManager
 
 
 def test_deployment_change_flow():
     async def run():
-        repo = Repository()
-        tester = PressureTester()
-        recorder = ThroughputRecorder()
-        adjuster = AdjustmentCoordinator()
-        dispatcher = Dispatcher()
+        repo = InMemoryRepository()
+        tester = SimplePressureTester()
+        recorder = JSONThroughputRepository()
+        adjuster = SimpleAdjustmentStrategy()
+        dispatcher = InMemoryDispatcher()
         state = StateManager()
 
         ctx = Context(repo, tester, recorder, adjuster, dispatcher, state)
@@ -46,7 +44,6 @@ def test_deployment_change_flow():
         assert await recorder.get({"node": "abc", "services": {}}) == 100
         assert state.state.value == "stable"
 
-        # Second run should not invoke load test again
         logging.info("processing deployment change event again")
         await processor.process(event)
         logging.info("finished second deployment change event")
