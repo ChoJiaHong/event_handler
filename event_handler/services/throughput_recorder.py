@@ -31,24 +31,9 @@ import json
 from pathlib import Path
 from typing import Any, Dict, Optional, Union, Mapping
 
-from dataclasses import dataclass
+from utils.helpers import ThroughputKey
 
 
-@dataclass
-class _ThroughputKey:
-    """Structured identifier for throughput entries."""
-
-    node_name: str
-    service_counts: Dict[str, int]
-
-    def to_string(self) -> str:
-        sorted_services = sorted(
-            (svc, cnt) for svc, cnt in self.service_counts.items() if cnt > 0
-        )
-        if not sorted_services:
-            return self.node_name
-        parts = [f"{svc}={cnt}" for svc, cnt in sorted_services]
-        return f"{self.node_name}:{','.join(parts)}"
 
 
 class ThroughputRecorder:
@@ -69,7 +54,7 @@ class ThroughputRecorder:
     @staticmethod
     def make_key(node_name: str, service_counts: Dict[str, int]) -> str:
         """Build a canonical key string from components."""
-        return _ThroughputKey(node_name, service_counts).to_string()
+        return ThroughputKey(node_name, service_counts).to_string()
 
 
     def _normalize_key(self, key: Union[str, Mapping[str, Any]]) -> str:
@@ -79,7 +64,7 @@ class ThroughputRecorder:
         category assignments.  To make lookups order independent we sort the
         category segments.
         """
-        if isinstance(key, _ThroughputKey):
+        if isinstance(key, ThroughputKey):
             key = key.to_string()
         elif isinstance(key, Mapping):
             key = self.make_key(key.get("node"), dict(key.get("services", {})))
@@ -92,7 +77,7 @@ class ThroughputRecorder:
             return prefix
         return f"{prefix}:{','.join(sorted(parts))}"
 
-    async def get(self, key: Union[str, Mapping[str, Any], _ThroughputKey], category: Optional[str] = None) -> Optional[int]:
+    async def get(self, key: Union[str, Mapping[str, Any], ThroughputKey], category: Optional[str] = None) -> Optional[int]:
         key = self._normalize_key(key)
 
         value = self._values.get(key)
@@ -109,7 +94,7 @@ class ThroughputRecorder:
 
         return None
 
-    async def save(self, key: Union[str, Mapping[str, Any], _ThroughputKey], throughput: int, category: Optional[str] = None) -> None:
+    async def save(self, key: Union[str, Mapping[str, Any], ThroughputKey], throughput: int, category: Optional[str] = None) -> None:
         key = self._normalize_key(key)
 
         if category is None:
