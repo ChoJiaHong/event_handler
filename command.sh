@@ -1,0 +1,1 @@
+kubectl cp app/kopf_operator.py default/event-handler-f48d85d8d-8rl6f:/app/app/

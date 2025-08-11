@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: event-handler
+  labels:
+    app: event-handler
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: event-handler
+  template:
+    metadata:
+      labels:
+        app: event-handler
+    spec:
+      serviceAccountName: event-handler-sa
+      nodeSelector:
+        node-role.kubernetes.io/control-plane: ""  # 選擇 master 節點
+      tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+        effect: NoSchedule
+      containers:
+      - name: event-handler
+        image: hiro08081/event_handler:2
+        imagePullPolicy: Always
+        command: ["kopf", "run", "--namespace", "default", "/app/app/kopf_operator.py"]
+        env:
+        - name: PYTHONPATH
+          value: "/app"
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: event-handler-sa
+  namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: event-handler-role
+rules:
+  # 讓 Kopf 啟動時能讀取 CRDs
+  - apiGroups: ["apiextensions.k8s.io"]
+    resources: ["customresourcedefinitions"]
+    verbs: ["get", "list", "watch"]
+
+  # 讓 Kopf 能監聽你的 CR（services.ha.example.com）
+  - apiGroups: ["ha.example.com"]
+    resources: ["*"]
+    verbs: ["get", "list", "watch", "patch", "update"]
+
+  # Kopf 在 Kubernetes 會用 events 資源記錄運行狀態
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch"]
+
+  # Leader election 需要 leases
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
+    verbs: ["get", "create", "update"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: event-handler-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: event-handler-role
+subjects:
+  - kind: ServiceAccount
+    name: event-handler-sa
+    namespace: default
