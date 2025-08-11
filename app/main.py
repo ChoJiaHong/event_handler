@@ -10,6 +10,10 @@ from infra import (
     InMemoryDispatcher,
     SimpleAdjustmentStrategy,
 )
+from app.logging_config import setup_logging
+
+# 在模組載入時設置日誌
+setup_logging()
 
 
 def build_context() -> Context:

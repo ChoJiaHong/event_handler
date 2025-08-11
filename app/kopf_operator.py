@@ -21,7 +21,7 @@ class KopfEventBridge:
     def __init__(self) -> None:
         self._processor = create_processor(build_context())
 
-    def forward(self, spec: dict[str, Any]) -> None:
+    async def forward(self, spec: dict[str, Any]) -> None:
         event = Event(
             type=spec.get("type"),
             payload=spec.get("payload", {}),
@@ -29,7 +29,7 @@ class KopfEventBridge:
             source="kopf",
         )
         print(f"Forwarding event: {event}")
-        #await self._processor.process(event)
+        await self._processor.process(event)
 
 
 _bridge = KopfEventBridge()
@@ -76,7 +76,7 @@ async def service_deploy_changed(body: dict, meta: dict, old: Any, new: Any, **_
         }
 
         print(f"\nForwarding deployment change event: {deployment_event}\n")
-        #await _bridge.forward(deployment_event)
+        await _bridge.forward(deployment_event)
         print(f"Deployment change event forwarded")
     else:
         print("✅ 部署環境無變動")

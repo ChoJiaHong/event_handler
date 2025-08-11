@@ -15,9 +15,12 @@ class JSONThroughputRepository(ThroughputRepository):
 
     def __init__(self, *, initial_data: Optional[Dict[str, Any]] = None, file_path: Optional[str] = None) -> None:
         self._values: Dict[str, Any] = initial_data.copy() if initial_data else {}
-        self._path: Optional[Path] = Path(file_path) if file_path else None
-        if self._path and self._path.exists():
+        self._path: Optional[Path] = Path(file_path) if file_path else Path("/app/data/throughput.json")
+        if self._path:
             try:
+                if not self._path.exists():
+                    self._path.parent.mkdir(parents=True, exist_ok=True)
+                    self._path.write_text(json.dumps(self._values, indent=2))
                 loaded = json.loads(self._path.read_text())
                 if isinstance(loaded, dict):
                     self._values.update(loaded)

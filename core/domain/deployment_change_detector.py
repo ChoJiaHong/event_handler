@@ -96,6 +96,15 @@ def _diff_counts(old_c: Dict[str, Counter], new_c: Dict[str, Counter]) -> Dict[s
     }
 
 
+def _extract_service_counts(spec):
+    """從 spec 中提取服務計數"""
+    counts = {}
+    for item in spec.get("raw", []):
+        service_type = item.get("serviceType")
+        if service_type:
+            counts[service_type] = counts.get(service_type, 0) + 1
+    return counts
+
 def has_deployment_changed(old_spec: Dict[str, Any], new_spec: Dict[str, Any]) -> Tuple[bool, Dict[str, Any]]:
     """
     高階方法：判斷部署環境是否變更（node 上服務部署數量變化）。
