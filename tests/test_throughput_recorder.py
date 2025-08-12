@@ -1,6 +1,6 @@
 import asyncio
 
-from infra.throughput_repository import JSONThroughputRepository
+from infrastructure.throughput_repository import JSONThroughputRepository
 
 sample_data = {
     "node1:gesture=2,pose=1": {

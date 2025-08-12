@@ -4,16 +4,16 @@ import logging
 
 logging.basicConfig(level=logging.INFO)
 
-from core import Event, Context, EventProcessor
-from handlers import DeploymentChangeHandler
-from infra import (
+from domain import Event, StateManager
+from application import Context, EventProcessor
+from application.handlers import DeploymentChangeHandler
+from infrastructure import (
     InMemoryRepository,
     SimplePressureTester,
     JSONThroughputRepository,
     SimpleAdjustmentStrategy,
     InMemoryDispatcher,
 )
-from core.domain import StateManager
 
 
 def test_deployment_change_flow():

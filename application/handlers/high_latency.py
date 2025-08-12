@@ -1,7 +1,7 @@
 import logging
 
-from core.domain import Event
-from core.context import Context
+from domain import Event
+from ..context import Context
 from .base import BaseHandler
 
 logger = logging.getLogger(__name__)

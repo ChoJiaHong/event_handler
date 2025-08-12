@@ -1,4 +1,4 @@
-from core.services import AdjustmentStrategy
+from domain.services import AdjustmentStrategy
 
 class SimpleAdjustmentStrategy(AdjustmentStrategy):
     """Compute new request frequency."""

@@ -6,7 +6,7 @@ from typing import Any
 import kopf
 
 from app.main import build_context, create_processor
-from core.domain import Event
+from domain import Event
 
 
 class KopfEventBridge:
