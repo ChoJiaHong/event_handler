@@ -4,7 +4,7 @@
 
 # Event Handler
 
-本專案提供一個極簡的事件處理中心（Event Processing Center）實作，依據軟體需求規格（SRS）設計。`EventProcessor` 會將進來的事件路由給已註冊的 handler，同時協調周邊服務。目前範例只包含 `DeploymentChangeHandler`。
+本專案提供一個極簡的事件處理中心（Event Processing Center）實作，依據軟體需求規格（SRS）設計。`EventProcessor` 會將進來的事件路由給已註冊的 handler，同時協調周邊服務。目前範例只包含 `DeploymentChangeHandler`。專案依循領域驅動設計（DDD），分為 `domain`、`application` 與 `infrastructure` 層以降低耦合、提升可維護性。
 
 ---
 
@@ -36,13 +36,13 @@ await recorder.save(deployment, 100, "pose")
 ## Kopf Operator 集成
 
 [**Kopf**](https://kopf.readthedocs.io/) 可用於從 Kubernetes 觸發領域事件。
-`infra/kopf_operator.py` 中的 operator 會監聽 group `example.com` 下的 `Event` custom resource，並將其轉換為領域事件傳給 `EventProcessor`。
+`infrastructure/kopf_operator.py` 中的 operator 會監聽 group `example.com` 下的 `Event` custom resource，並將其轉換為領域事件傳給 `EventProcessor`。
 
 ### 運行 Operator
 
 ```bash
 pip install kopf
-kopf run infra/kopf_operator.py
+kopf run infrastructure/kopf_operator.py
 ```
 
 建立 custom resource 時，填入 `spec.type` 與 `spec.payload` 欄位，即會觸發領域事件，所有已註冊 Handler 皆會收到此事件。
@@ -55,7 +55,7 @@ Handler 擴充完全獨立於 operator。
 要增加新的事件類型，請參考以下寫法：
 
 ```python
-from handlers.base import BaseHandler
+from application.handlers.base import BaseHandler
 
 class ScaleUpHandler(BaseHandler):
     async def handle(self, event, ctx):

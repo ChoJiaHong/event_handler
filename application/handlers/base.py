@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
-from core.domain import Event
-from core.context import Context
+from domain import Event
+from ..context import Context
 
 class BaseHandler(ABC):
     @abstractmethod

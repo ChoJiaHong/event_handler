@@ -1,9 +1,13 @@
 """Application entry point assembling dependencies."""
 
-from core import EventProcessor, Context
-from core.domain import Event, StateManager
-from handlers import DeploymentChangeHandler, HighLatencyHandler, IdleSystemHandler
-from infra import (
+from application import EventProcessor, Context
+from domain import Event, StateManager
+from application.handlers import (
+    DeploymentChangeHandler,
+    HighLatencyHandler,
+    IdleSystemHandler,
+)
+from infrastructure import (
     InMemoryRepository,
     SimplePressureTester,
     JSONThroughputRepository,

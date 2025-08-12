@@ -1,9 +1,8 @@
 from typing import Dict
 
-from core.domain import Event
-from core.context import Context
-from core.domain.state_manager import State
-from handlers.base import BaseHandler
+from domain import Event, State
+from .context import Context
+from .handlers.base import BaseHandler
 
 class EventProcessor:
     def __init__(self, ctx: Context):

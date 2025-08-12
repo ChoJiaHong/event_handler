@@ -4,16 +4,16 @@ import logging
 
 logging.basicConfig(level=logging.INFO)
 
-from core import Event, Context, EventProcessor
-from handlers import HighLatencyHandler
-from infra import (
+from domain import Event, StateManager
+from application import Context, EventProcessor
+from application.handlers import HighLatencyHandler
+from infrastructure import (
     InMemoryRepository,
     SimplePressureTester,
     JSONThroughputRepository,
     SimpleAdjustmentStrategy,
     InMemoryDispatcher,
 )
-from core.domain import StateManager
 
 
 def test_high_latency_handler_registration():

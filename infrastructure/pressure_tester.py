@@ -1,6 +1,6 @@
 import asyncio
 from typing import List, Dict
-from core.services import PressureTester
+from domain.services import PressureTester
 from .k8s_subscription_client import K8sSubscriptionClient
 from .frequency_test_executor import FrequencyTestExecutor
 from .load_test_config import LoadTestConfig
@@ -18,12 +18,12 @@ class SimplePressureTester(PressureTester):
         # 獲取 agents
         subscription_data = await self.k8s_client.get_subscription_info()
         if not subscription_data:
-            return 0
-            
+            return 100
+
         agents = subscription_data.get('raw', [])
         if not agents:
-            return 0
-        
+            return 100
+
         # 執行測試
         return await self._execute_load_test(agents, deployment_hash)
     
