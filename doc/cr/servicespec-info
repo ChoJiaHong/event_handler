@@ -1,0 +1,28 @@
+#kubectl get servicespecs.ha.example.com servicespec-info -n arha-system -o yaml
+apiVersion: ha.example.com/v1
+kind: ServiceSpec
+metadata:
+  creationTimestamp: "2025-08-08T09:10:51Z"
+  generation: 3
+  name: servicespec-info
+  namespace: arha-system
+  resourceVersion: "1475310"
+  uid: d17329f0-4fec-457a-a4ed-a27f0d77233e
+spec:
+  raw:
+  - frequencyLimit:
+    - 20
+    - 10
+    gpuMemoryRequest: 1
+    serviceType: gesture
+    workAbility:
+      pdclab: 230
+      workgpu: 180
+  - frequencyLimit:
+    - 30
+    - 15
+    gpuMemoryRequest: 1
+    serviceType: pose
+    workAbility:
+      pdclab: 80
+      workgpu: 66

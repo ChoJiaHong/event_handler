@@ -3,6 +3,7 @@ from .pressure_tester import SimplePressureTester
 from .throughput_repository import JSONThroughputRepository
 from .dispatcher import InMemoryDispatcher
 from .adjustment_strategy import SimpleAdjustmentStrategy
+from .k8s_cr_client import K8sCustomResourceClient
 
 __all__ = [
     "InMemoryRepository",
@@ -10,4 +11,5 @@ __all__ = [
     "JSONThroughputRepository",
     "InMemoryDispatcher",
     "SimpleAdjustmentStrategy",
+    "K8sCustomResourceClient",
 ]

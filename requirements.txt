@@ -1,2 +1,3 @@
 kopf
 pytest
+kubernetes

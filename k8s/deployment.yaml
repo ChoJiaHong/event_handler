@@ -55,6 +55,11 @@ rules:
     resources: ["*"]
     verbs: ["get", "list", "watch", "patch", "update"]
 
+  # 壓力測試器需要讀取 subscriptions 資源 (在 arha-system namespace)
+  - apiGroups: ["ha.example.com"]
+    resources: ["subscriptions"]
+    verbs: ["get", "list"]
+
   # Kopf 在 Kubernetes 會用 events 資源記錄運行狀態
   - apiGroups: [""]
     resources: ["events"]
@@ -64,6 +69,11 @@ rules:
   - apiGroups: ["coordination.k8s.io"]
     resources: ["leases"]
     verbs: ["get", "create", "update"]
+
+  # 如果需要跨 namespace 訪問資源，可能需要以下權限
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["get", "list"]
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1

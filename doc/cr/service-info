@@ -1,0 +1,37 @@
+#kubectl get services.ha.example.com service-info -n arha-system -o yaml
+apiVersion: ha.example.com/v1
+kind: Service
+metadata:
+  annotations:
+    kopf.zalando.org/last-handled-configuration: |
+      {"spec":{"raw":[{"currentConnection":2,"currentFrequency":30,"frequencyLimit":[30,15],"hostIP":"10.52.52.26","hostPort":30500,"nodeName":"pdclab","podIP":"10.244.3.48","serviceType":"pose","workloadLimit":80},{"currentConnection":2,"currentFrequency":20,"frequencyLimit":[20,10],"hostIP":"10.52.52.25","hostPort":30501,"nodeName":"workgpu","podIP":"10.244.2.33","serviceType":"gesture","workloadLimit":180}]}}
+  creationTimestamp: "2025-08-08T09:10:51Z"
+  generation: 39
+  name: service-info
+  namespace: arha-system
+  resourceVersion: "1506195"
+  uid: 02b7447f-6ecf-4563-a5e7-9976c22126cc
+spec:
+  raw:
+  - currentConnection: 2
+    currentFrequency: 30
+    frequencyLimit:
+    - 30
+    - 15
+    hostIP: 10.52.52.26
+    hostPort: 30500
+    nodeName: pdclab
+    podIP: 10.244.3.48
+    serviceType: pose
+    workloadLimit: 80
+  - currentConnection: 2
+    currentFrequency: 20
+    frequencyLimit:
+    - 20
+    - 10
+    hostIP: 10.52.52.25
+    hostPort: 30501
+    nodeName: workgpu
+    podIP: 10.244.2.33
+    serviceType: gesture
+    workloadLimit: 180

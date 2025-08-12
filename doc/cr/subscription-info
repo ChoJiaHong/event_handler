@@ -1,0 +1,32 @@
+#kubectl get subscriptions.ha.example.com subscription-info -n arha-system -o yaml
+apiVersion: ha.example.com/v1
+kind: Subscription
+metadata:
+  creationTimestamp: "2025-08-08T09:10:52Z"
+  generation: 6
+  name: subscription-info
+  namespace: arha-system
+  resourceVersion: "1506191"
+  uid: 87a19ec2-18eb-4fa8-8cf4-76d34da3fc9d
+spec:
+  raw:
+  - agentIP: 10.52.52.111
+    agentPort: 8888
+    nodeName: pdclab
+    podIP: 10.244.3.48
+    serviceType: pose
+  - agentIP: 10.52.52.111
+    agentPort: 8888
+    nodeName: workgpu
+    podIP: 10.244.2.33
+    serviceType: gesture
+  - agentIP: 10.52.52.111
+    agentPort: 8889
+    nodeName: pdclab
+    podIP: 10.244.3.48
+    serviceType: pose
+  - agentIP: 10.52.52.111
+    agentPort: 8889
+    nodeName: workgpu
+    podIP: 10.244.2.33
+    serviceType: gesture
