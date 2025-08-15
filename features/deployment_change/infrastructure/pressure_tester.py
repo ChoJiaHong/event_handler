@@ -1,6 +1,6 @@
 import asyncio
 from typing import List, Dict
-from domain.services import PressureTester
+from ..domain.services import PressureTester
 from .k8s_subscription_client import K8sSubscriptionClient
 from .frequency_test_executor import FrequencyTestExecutor
 from .load_test_config import LoadTestConfig

@@ -1,4 +1,4 @@
-from utils.service_lookup import (
+from shared.service_lookup import (
     get_agents_for_service,
     get_service_node,
     get_services_on_node,

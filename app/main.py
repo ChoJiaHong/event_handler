@@ -1,19 +1,17 @@
 """Application entry point assembling dependencies."""
 
-from application import EventProcessor, Context
-from domain import Event, StateManager
-from application.handlers import (
+from shared import Event, StateManager, EventBus
+from features.deployment_change import (
+    Context,
     DeploymentChangeHandler,
-    HighLatencyHandler,
-    IdleSystemHandler,
-)
-from infrastructure import (
     InMemoryRepository,
     SimplePressureTester,
     JSONThroughputRepository,
     InMemoryDispatcher,
     SimpleAdjustmentStrategy,
 )
+from features.high_latency import HighLatencyHandler
+from features.idle_system import IdleSystemHandler
 from app.logging_config import setup_logging
 
 # 在模組載入時設置日誌
@@ -30,15 +28,15 @@ def build_context() -> Context:
     return Context(repo, tester, recorder, adjuster, dispatcher, state)
 
 
-def create_processor(ctx: Context) -> EventProcessor:
-    processor = EventProcessor(ctx)
-    processor.register_handler("DEPLOYMENT_CHANGE", DeploymentChangeHandler())
-    processor.register_handler("HIGH_LATENCY", HighLatencyHandler())
-    processor.register_handler("IDLE_SYSTEM", IdleSystemHandler())
-    return processor
+def create_bus(ctx: Context) -> EventBus:
+    bus = EventBus(ctx)
+    bus.register_handler("DEPLOYMENT_CHANGE", DeploymentChangeHandler())
+    bus.register_handler("HIGH_LATENCY", HighLatencyHandler())
+    bus.register_handler("IDLE_SYSTEM", IdleSystemHandler())
+    return bus
 
 
 async def run(event: Event) -> None:
     ctx = build_context()
-    processor = create_processor(ctx)
-    await processor.process(event)
+    bus = create_bus(ctx)
+    await bus.publish(event)

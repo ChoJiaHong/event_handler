@@ -1,4 +1,4 @@
-from domain.services import Repository as RepositoryInterface
+from ..domain.services import Repository as RepositoryInterface
 
 
 class InMemoryRepository(RepositoryInterface):

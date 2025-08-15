@@ -6,8 +6,8 @@ import json
 from pathlib import Path
 from typing import Any, Dict, Optional, Union, Mapping
 
-from domain.services import ThroughputRepository
-from utils.helpers import ThroughputKey
+from ..domain.services import ThroughputRepository
+from shared import ThroughputKey
 
 
 class JSONThroughputRepository(ThroughputRepository):

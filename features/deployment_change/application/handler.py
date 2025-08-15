@@ -1,10 +1,10 @@
 import logging
 
-from domain import Event
-from ..context import Context
-from .base import BaseHandler
+from shared import Event, BaseHandler
+from .context import Context
 
 logger = logging.getLogger(__name__)
+
 
 class DeploymentChangeHandler(BaseHandler):
     async def handle(self, event: Event, ctx: Context) -> None:

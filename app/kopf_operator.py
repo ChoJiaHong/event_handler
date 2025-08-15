@@ -5,8 +5,9 @@ from typing import Any
 
 import kopf
 
-from app.main import build_context, create_processor
-from domain import Event, deployment_change_detector
+from app.main import build_context, create_bus
+from shared import Event
+from features.deployment_change.domain import deployment_change_detector
 
 
 class KopfEventBridge:
@@ -19,7 +20,7 @@ class KopfEventBridge:
     """
 
     def __init__(self) -> None:
-        self._processor = create_processor(build_context())
+        self._bus = create_bus(build_context())
 
     async def forward(self, spec: dict[str, Any]) -> None:
         event = Event(
@@ -29,7 +30,7 @@ class KopfEventBridge:
             source="kopf",
         )
         print(f"Forwarding event: {event}")
-        await self._processor.process(event)
+        await self._bus.publish(event)
 
 
 _bridge = KopfEventBridge()
