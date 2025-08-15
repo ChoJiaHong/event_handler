@@ -19,16 +19,20 @@ class K8sCustomResourceClient:
         - 建立 CustomObjectsApi client
         """
         try:
-            # 嘗試載入叢集內配置
             config.load_incluster_config()
+            self.custom_api = client.CustomObjectsApi()
+            self.core_api = client.CoreV1Api()
             logger.info("已載入叢集內 Kubernetes 配置")
-        except:
-            # 如果不在叢集內，則載入本地配置
-            config.load_kube_config()
-            logger.info("已載入本地 Kubernetes 配置")
-        
-        self.custom_api = client.CustomObjectsApi()
-        self.core_api = client.CoreV1Api()
+        except Exception:
+            try:
+                config.load_kube_config()
+                self.custom_api = client.CustomObjectsApi()
+                self.core_api = client.CoreV1Api()
+                logger.info("已載入本地 Kubernetes 配置")
+            except Exception:
+                self.custom_api = None
+                self.core_api = None
+                logger.warning("無法載入 Kubernetes 配置，使用 stub 模式")
 
     async def get_custom_resource(
         self, 
@@ -52,6 +56,8 @@ class K8sCustomResourceClient:
         - Dict[str, Any]: CustomResource 的完整內容，包含 metadata, spec, status
         - None: 如果資源不存在或讀取失敗
         """
+        if not self.custom_api:
+            return None
         try:
             loop = asyncio.get_event_loop()
             response = await loop.run_in_executor(
@@ -65,7 +71,6 @@ class K8sCustomResourceClient:
             )
             logger.info(f"成功讀取 CR: {namespace}/{name}")
             return response
-            
         except ApiException as e:
             if e.status == 404:
                 logger.warning(f"CustomResource 不存在: {namespace}/{name}")
@@ -97,6 +102,8 @@ class K8sCustomResourceClient:
         Output:
         - List[Dict[str, Any]]: CustomResource 列表
         """
+        if not self.custom_api:
+            return []
         try:
             loop = asyncio.get_event_loop()
             response = await loop.run_in_executor(
@@ -112,7 +119,6 @@ class K8sCustomResourceClient:
             items = response.get('items', [])
             logger.info(f"成功列出 {len(items)} 個 CustomResources")
             return items
-            
         except ApiException as e:
             logger.error(f"列出 CustomResources 失敗: {e}")
             return []
@@ -142,6 +148,8 @@ class K8sCustomResourceClient:
         - Dict[str, Any]: 創建成功的 CustomResource
         - None: 如果創建失敗
         """
+        if not self.custom_api:
+            return None
         try:
             loop = asyncio.get_event_loop()
             response = await loop.run_in_executor(
@@ -156,7 +164,6 @@ class K8sCustomResourceClient:
             name = body.get('metadata', {}).get('name', 'unknown')
             logger.info(f"成功創建 CR: {namespace}/{name}")
             return response
-            
         except ApiException as e:
             logger.error(f"創建 CustomResource 失敗: {e}")
             return None
@@ -188,6 +195,8 @@ class K8sCustomResourceClient:
         - Dict[str, Any]: 更新成功的 CustomResource
         - None: 如果更新失敗
         """
+        if not self.custom_api:
+            return None
         try:
             loop = asyncio.get_event_loop()
             response = await loop.run_in_executor(
@@ -202,7 +211,6 @@ class K8sCustomResourceClient:
             )
             logger.info(f"成功更新 CR: {namespace}/{name}")
             return response
-            
         except ApiException as e:
             logger.error(f"更新 CustomResource 失敗: {e}")
             return None
@@ -234,6 +242,8 @@ class K8sCustomResourceClient:
         - Dict[str, Any]: 更新成功的 CustomResource
         - None: 如果更新失敗
         """
+        if not self.custom_api:
+            return None
         try:
             loop = asyncio.get_event_loop()
             response = await loop.run_in_executor(
@@ -248,7 +258,6 @@ class K8sCustomResourceClient:
             )
             logger.info(f"成功 patch CR: {namespace}/{name}")
             return response
-            
         except ApiException as e:
             logger.error(f"Patch CustomResource 失敗: {e}")
             return None
@@ -277,6 +286,8 @@ class K8sCustomResourceClient:
         Output:
         - bool: 刪除是否成功
         """
+        if not self.custom_api:
+            return False
         try:
             loop = asyncio.get_event_loop()
             await loop.run_in_executor(
@@ -290,7 +301,6 @@ class K8sCustomResourceClient:
             )
             logger.info(f"成功刪除 CR: {namespace}/{name}")
             return True
-            
         except ApiException as e:
             if e.status == 404:
                 logger.warning(f"CustomResource 不存在，無法刪除: {namespace}/{name}")
@@ -329,6 +339,8 @@ class K8sCustomResourceClient:
         Output:
         - bool: 更新是否成功
         """
+        if not self.custom_api:
+            return False
         # 首先獲取當前的服務資訊
         current = await self.get_service_info(namespace)
         if not current:
@@ -355,5 +367,4 @@ class K8sCustomResourceClient:
         result = await self.patch_custom_resource(
             "ha.example.com", "v1", namespace, "services", "service-info", patch
         )
-        
         return result is not None
