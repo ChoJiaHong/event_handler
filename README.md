@@ -1,72 +1,50 @@
-
-
----
-
 # Event Handler
 
-本專案提供一個極簡的事件處理中心（Event Processing Center）實作，依據軟體需求規格（SRS）設計。`EventProcessor` 會將進來的事件路由給已註冊的 handler，同時協調周邊服務。目前範例只包含 `DeploymentChangeHandler`。專案依循領域驅動設計（DDD），分為 `domain`、`application` 與 `infrastructure` 層以降低耦合、提升可維護性。
+此專案提供一個簡化的事件驅動範例。程式碼依照業務功能劃分為 `features/<module>`，每個模組皆包含 `domain/`、`application/` 與 `infrastructure/` 三層，並以 `domain/aggregate.py` 作為聚合根的公開入口。
 
----
+```
+features/
+├── deployment/
+│   ├── domain/
+│   └── infrastructure/
+└── throughput/
+    ├── domain/
+    ├── application/
+    └── infrastructure/
+```
 
-## 事件處理設計
+共用的工具與介面移至 `shared/`，提供統一的 logger、設定與驗證器，以及其他可重用的協助函式：
 
-* **事件處理（EventProcessor）**：負責接收並分發事件給對應的 Handler。
-* **Handler 擴充**：所有 Handler 與外部觸發（如 operator）完全解耦，易於擴展。
+```
+shared/
+├── config.py
+├── event.py
+├── helpers.py
+├── logger.py
+├── service_lookup.py
+└── validators.py
+```
 
----
+## 事件總線
 
-## Throughput Key 支援
-
-`ThroughputRecorder` 操作接受兩種 key 格式：
-
-* 傳統字串格式
-* 字典格式，內容包含 `node` 和 `services` 欄位
-
-**範例：**
+模組之間透過 `event_bus` 溝通，使用 `publish()` 與 `subscribe()` 介面註冊或傳遞事件：
 
 ```python
-deployment = {"node": "node1", "services": {"pose": 1, "gesture": 2}}
-await recorder.save(deployment, 100, "pose")
+from event_bus import publish, subscribe
+from shared.event import Event
+
+async def handler(event: Event):
+    ...
+
+subscribe("EXAMPLE", handler)
+await publish(Event(type="EXAMPLE", payload={}, timestamp=datetime.utcnow(), source="test"))
 ```
 
-無論字典順序如何，系統內部都會轉為標準 key 進行查詢，查找時順序不影響結果。
+Throughput 模組的應用層會在啟動時向事件總線註冊 handlers，聚合根提供 `register(ctx)` 方法進行註冊。`app/main.py` 負責組裝相依性並啟動事件流。
 
----
+## 測試
 
-## Kopf Operator 集成
-
-[**Kopf**](https://kopf.readthedocs.io/) 可用於從 Kubernetes 觸發領域事件。
-`infrastructure/kopf_operator.py` 中的 operator 會監聽 group `example.com` 下的 `Event` custom resource，並將其轉換為領域事件傳給 `EventProcessor`。
-
-### 運行 Operator
-
-```bash
-pip install kopf
-kopf run infrastructure/kopf_operator.py
-```
-
-建立 custom resource 時，填入 `spec.type` 與 `spec.payload` 欄位，即會觸發領域事件，所有已註冊 Handler 皆會收到此事件。
-
----
-
-## Handler 擴展範例
-
-Handler 擴充完全獨立於 operator。
-要增加新的事件類型，請參考以下寫法：
-
-```python
-from application.handlers.base import BaseHandler
-
-class ScaleUpHandler(BaseHandler):
-    async def handle(self, event, ctx):
-        # 自訂邏輯
-
-processor.register_handler("SCALE_UP", ScaleUpHandler())
-```
-
----
-
-## 執行測試
+測試依照模組放置於 `tests/features/<module>` 或 `tests/shared`。執行所有測試：
 
 ```bash
 pytest -q
