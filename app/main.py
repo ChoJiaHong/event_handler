@@ -1,22 +1,19 @@
 """Application entry point assembling dependencies."""
 
-from application import EventProcessor, Context
-from domain import Event, StateManager
-from application.handlers import (
-    DeploymentChangeHandler,
-    HighLatencyHandler,
-    IdleSystemHandler,
-)
-from infrastructure import (
+from features.throughput.application import Context, register
+from features.throughput.infrastructure import (
     InMemoryRepository,
     SimplePressureTester,
     JSONThroughputRepository,
     InMemoryDispatcher,
     SimpleAdjustmentStrategy,
 )
+from features.throughput.domain.aggregate import StateManager
+from shared.event import Event
+from event_bus import publish, clear
 from app.logging_config import setup_logging
 
-# 在模組載入時設置日誌
+# Setup logging when module is imported
 setup_logging()
 
 
@@ -30,15 +27,12 @@ def build_context() -> Context:
     return Context(repo, tester, recorder, adjuster, dispatcher, state)
 
 
-def create_processor(ctx: Context) -> EventProcessor:
-    processor = EventProcessor(ctx)
-    processor.register_handler("DEPLOYMENT_CHANGE", DeploymentChangeHandler())
-    processor.register_handler("HIGH_LATENCY", HighLatencyHandler())
-    processor.register_handler("IDLE_SYSTEM", IdleSystemHandler())
-    return processor
+def register_handlers(ctx: Context) -> None:
+    clear()
+    register(ctx)
 
 
 async def run(event: Event) -> None:
     ctx = build_context()
-    processor = create_processor(ctx)
-    await processor.process(event)
+    register_handlers(ctx)
+    await publish(event)
