@@ -4,6 +4,7 @@ from .throughput_repository import JSONThroughputRepository
 from .dispatcher import InMemoryDispatcher
 from .adjustment_strategy import SimpleAdjustmentStrategy
 from .k8s_cr_client import K8sCustomResourceClient
+from .prometheus_client import PrometheusClient
 
 __all__ = [
     "InMemoryRepository",
@@ -12,4 +13,5 @@ __all__ = [
     "InMemoryDispatcher",
     "SimpleAdjustmentStrategy",
     "K8sCustomResourceClient",
+    "PrometheusClient",
 ]

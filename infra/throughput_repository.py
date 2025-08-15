@@ -15,7 +15,7 @@ class JSONThroughputRepository(ThroughputRepository):
 
     def __init__(self, *, initial_data: Optional[Dict[str, Any]] = None, file_path: Optional[str] = None) -> None:
         self._values: Dict[str, Any] = initial_data.copy() if initial_data else {}
-        self._path: Optional[Path] = Path(file_path) if file_path else Path("/app/data/throughput.json")
+        self._path: Optional[Path] = Path(file_path) if file_path else None
         if self._path:
             try:
                 if not self._path.exists():
