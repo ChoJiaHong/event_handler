@@ -1,13 +1,14 @@
 from typing import NamedTuple
 
-from domain.services import (
+from ..domain.services import (
     Repository,
     PressureTester,
     ThroughputRepository,
     AdjustmentStrategy,
     Dispatcher,
 )
-from domain import StateManager
+from shared import StateManager
+
 
 class Context(NamedTuple):
     repo: Repository

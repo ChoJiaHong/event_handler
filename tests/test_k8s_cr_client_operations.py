@@ -1,5 +1,5 @@
 import asyncio
-from infrastructure.k8s_cr_client import K8sCustomResourceClient
+from features.deployment_change.infrastructure.k8s_cr_client import K8sCustomResourceClient
 
 
 def test_k8s_cr_client_operations():

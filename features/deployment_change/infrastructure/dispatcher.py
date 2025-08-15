@@ -1,4 +1,5 @@
-from domain.services import Dispatcher as DispatcherInterface
+from ..domain.services import Dispatcher as DispatcherInterface
+
 
 class InMemoryDispatcher(DispatcherInterface):
     """Store dispatched frequency for inspection in tests."""

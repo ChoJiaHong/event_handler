@@ -4,10 +4,10 @@ import logging
 
 logging.basicConfig(level=logging.INFO)
 
-from domain import Event, StateManager
-from application import Context, EventProcessor
-from application.handlers import DeploymentChangeHandler
-from infrastructure import (
+from shared import Event, StateManager, EventBus
+from features.deployment_change import (
+    Context,
+    DeploymentChangeHandler,
     InMemoryRepository,
     SimplePressureTester,
     JSONThroughputRepository,
@@ -26,8 +26,8 @@ def test_deployment_change_flow():
         state = StateManager()
 
         ctx = Context(repo, tester, recorder, adjuster, dispatcher, state)
-        processor = EventProcessor(ctx)
-        processor.register_handler("DEPLOYMENT_CHANGE", DeploymentChangeHandler())
+        bus = EventBus(ctx)
+        bus.register_handler("DEPLOYMENT_CHANGE", DeploymentChangeHandler())
 
         event = Event(
             type="DEPLOYMENT_CHANGE",
@@ -37,7 +37,7 @@ def test_deployment_change_flow():
         )
 
         logging.info("processing deployment change event")
-        await processor.process(event)
+        await bus.publish(event)
         logging.info("finished deployment change event")
 
         assert dispatcher.last_dispatched == 100
@@ -45,7 +45,7 @@ def test_deployment_change_flow():
         assert state.state.value == "stable"
 
         logging.info("processing deployment change event again")
-        await processor.process(event)
+        await bus.publish(event)
         logging.info("finished second deployment change event")
         assert dispatcher.last_dispatched == 100
 
