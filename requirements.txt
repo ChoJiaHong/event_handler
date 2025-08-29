@@ -1,3 +1,6 @@
 kopf
 pytest
 kubernetes
+json
+requests
+prometheus-api-client

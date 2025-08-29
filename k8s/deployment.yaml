@@ -28,7 +28,7 @@ spec:
       - name: event-handler
         image: hiro08081/event_handler:2
         imagePullPolicy: Always
-        command: ["kopf", "run", "--namespace", "default", "/app/app/kopf_operator.py"]
+        command: ["sleep", "infinity"]
         env:
         - name: PYTHONPATH
           value: "/app"

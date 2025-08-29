@@ -59,25 +59,45 @@ async def service_deploy_changed(body: dict, meta: dict, old: Any, new: Any, **_
         print("⚠ 部署環境發生變動！")
         print(f"變動詳情: {details['diff']}")
         
-        # 創建符合 DeploymentChangeHandler 預期的事件格式
-        deployment_event = {
-            "type": "DEPLOYMENT_CHANGE",
-            "payload": {
-                "hash": {
-                    "node": list(details['new_signatures'].keys())[0] if details['new_signatures'] else "unknown",
-                    "services": _extract_service_counts(new)
-                },
-                #"old_spec": old,
-                "new_spec": new,
-                #"diff": details['diff'],
-                #"namespace": meta.get('namespace'),
-                #"name": meta.get('name')
+        # 為每個有變動的節點生成單獨的事件
+        changed_nodes = details['diff']['changed_nodes']
+        
+        for node_name in changed_nodes.keys():
+            node_service_counts = _extract_service_counts_for_node(new, node_name)
+            
+            deployment_event = {
+                "type": "DEPLOYMENT_CHANGE",
+                "payload": {
+                    "hash": {
+                        "node": node_name,
+                        "services": node_service_counts
+                    },
+                    "new_spec": new,
+                }
             }
-        }
 
-        print(f"\nForwarding deployment change event: {deployment_event}\n")
-        await _bridge.forward(deployment_event)
-        print(f"Deployment change event forwarded")
+            print(f"\nForwarding deployment change event for node {node_name}: {deployment_event}\n")
+            await _bridge.forward(deployment_event)
+            
+        # 也要處理新增和刪除的節點
+        for node_name in details['diff']['added_nodes']:
+            node_service_counts = _extract_service_counts_for_node(new, node_name)
+            
+            deployment_event = {
+                "type": "DEPLOYMENT_CHANGE", 
+                "payload": {
+                    "hash": {
+                        "node": node_name,
+                        "services": node_service_counts
+                    },
+                    "new_spec": new,
+                }
+            }
+            
+            print(f"\nForwarding deployment change event for new node {node_name}: {deployment_event}\n")
+            await _bridge.forward(deployment_event)
+            
+        print(f"Deployment change events forwarded for {len(changed_nodes) + len(details['diff']['added_nodes'])} nodes")
     else:
         print("✅ 部署環境無變動")
         
@@ -88,6 +108,16 @@ def _extract_service_counts(spec):
     for item in spec.get("raw", []):
         service_type = item.get("serviceType")
         if service_type:
+            counts[service_type] = counts.get(service_type, 0) + 1
+    return counts
+
+def _extract_service_counts_for_node(spec, target_node):
+    """從 spec 中提取特定節點的服務計數"""
+    counts = {}
+    for item in spec.get("raw", []):
+        node_name = item.get("nodeName")
+        service_type = item.get("serviceType")
+        if node_name == target_node and service_type:
             counts[service_type] = counts.get(service_type, 0) + 1
     return counts
 

@@ -19,7 +19,7 @@ setup_logging()
 def build_context() -> Context:
     repo = InMemoryRepository()
     tester = SimplePressureTester()
-    recorder = JSONThroughputRepository()
+    recorder = JSONThroughputRepository(file_path="/tmp/throughput_results.json") 
     adjuster = SimpleAdjustmentStrategy()
     dispatcher = InMemoryDispatcher()
     state = StateManager()

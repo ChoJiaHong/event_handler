@@ -48,9 +48,15 @@ class JSONThroughputRepository(ThroughputRepository):
         key = self._normalize_key(key)
         value = self._values.get(key)
         if category is None:
-            if isinstance(value, dict) and len(value) == 1:
-                inner = next(iter(value.values()))
-                return inner.get("throughput") if isinstance(inner, dict) else None
+            # 優先返回 "total" 欄位的值
+            if isinstance(value, dict):
+                if "total" in value and isinstance(value["total"], dict):
+                    return value["total"].get("throughput")
+                # 向後兼容：如果只有一個欄位且不是服務分類格式
+                if len(value) == 1:
+                    inner = next(iter(value.values()))
+                    return inner.get("throughput") if isinstance(inner, dict) else inner
+            # 向後兼容：直接數值
             return value if not isinstance(value, dict) else None
         if isinstance(value, dict):
             inner = value.get(category)
@@ -73,3 +79,58 @@ class JSONThroughputRepository(ThroughputRepository):
             entry["throughput"] = throughput
         if self._path:
             self._path.write_text(json.dumps(self._values, indent=2))
+
+    async def save_service_throughputs(
+        self, 
+        key: Union[str, Mapping[str, Any], ThroughputKey], 
+        service_throughputs: Dict[str, int]
+    ) -> None:
+        """
+        儲存多服務的吞吐量資料
+        
+        Input:
+        - key: 部署金鑰
+        - service_throughputs: {service_type: throughput}
+        """
+        key = self._normalize_key(key)
+        
+        # 確保有一個字典結構來儲存服務資料
+        if key not in self._values:
+            self._values[key] = {}
+        elif not isinstance(self._values[key], dict):
+            self._values[key] = {}
+        
+        # 為每個服務分別儲存
+        for service_type, throughput in service_throughputs.items():
+            self._values[key][service_type] = {"throughput": throughput}
+        
+        # 儲存總和到特殊的 "total" 欄位
+        total_throughput = sum(service_throughputs.values())
+        self._values[key]["total"] = {"throughput": total_throughput}
+        
+        # 寫入檔案
+        if self._path:
+            self._path.write_text(json.dumps(self._values, indent=2))
+
+    async def get_service_throughputs(
+        self, 
+        key: Union[str, Mapping[str, Any], ThroughputKey]
+    ) -> Dict[str, int]:
+        """
+        獲取多服務的吞吐量資料
+        
+        Output:
+        - {service_type: throughput}
+        """
+        key = self._normalize_key(key)
+        value = self._values.get(key, {})
+        
+        if isinstance(value, dict):
+            # 提取所有服務的吞吐量
+            service_throughputs = {}
+            for service_type, service_data in value.items():
+                if isinstance(service_data, dict) and 'throughput' in service_data:
+                    service_throughputs[service_type] = service_data['throughput']
+            return service_throughputs
+        
+        return {}
